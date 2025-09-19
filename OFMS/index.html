@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LMS Singleton Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 20px;
+      color: #111827;
+    }
+    h1 {
+      color: #2563eb;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    input, textarea, button {
+      padding: 8px;
+      margin-top: 5px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #d1d5db;
+      border-radius: 5px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      border: none;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    .course-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    #course-list {
+      margin-top: 20px;
+    }
+    .empty-msg {
+      color: #6b7280;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>LMS — Singleton Demo</h1>
+  <p><strong>Demo:</strong> Single instance manages courses & enrollments</p>
+
+  <div>
+    <h2>Add Course</h2>
+    <div class="form-group">
+      <label>Course Title</label>
+      <input type="text" id="title" placeholder="e.g. Intro to Algorithms">
+    </div>
+    <div class="form-group">
+      <label>Instructor</label>
+      <input type="text" id="instructor" placeholder="e.g. Dr. Rao">
+    </div>
+    <div class="form-group">
+      <label>Short Description</label>
+      <textarea id="description" placeholder="What students will learn"></textarea>
+    </div>
+    <button onclick="addCourse()">Add Course</button>
+    <button onclick="clearAll()">Clear All</button>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h2>Filter</h2>
+    <input type="text" id="filter" placeholder="Filter by title or instructor" oninput="filterCourses()">
+  </div>
+
+  <div id="course-list">
+    <p class="empty-msg">No courses yet — add one.</p>
+  </div>
+
+  <script>
+    // Singleton LMS class
+    class LMS {
+      constructor() {
+        if (LMS.instance) {
+          return LMS.instance;
+        }
+        this.courses = [];
+        LMS.instance = this;
+      }
+
+      addCourse(course) {
+        this.courses.push(course);
+      }
+
+      clearCourses() {
+        this.courses = [];
+      }
+
+      getCourses() {
+        return this.courses;
+      }
+    }
+
+    const lms = new LMS();
+
+    function addCourse() {
+      const title = document.getElementById('title').value.trim();
+      const instructor = document.getElementById('instructor').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!title || !instructor || !description) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      lms.addCourse({ title, instructor, description });
+      document.getElementById('title').value = "";
+      document.getElementById('instructor').value = "";
+      document.getElementById('description').value = "";
+      displayCourses();
+    }
+
+    function clearAll() {
+      lms.clearCourses();
+      displayCourses();
+    }
+
+    function filterCourses() {
+      const filter = document.getElementById('filter').value.toLowerCase();
+      const courses = lms.getCourses().filter(c =>
+        c.title.toLowerCase().includes(filter) ||
+        c.instructor.toLowerCase().includes(filter)
+      );
+      renderCourseList(courses);
+    }
+
+    function displayCourses() {
+      const courses = lms.getCourses();
+      renderCourseList(courses);
+    }
+
+    function renderCourseList(courses) {
+      const container = document.getElementById('course-list');
+      container.innerHTML = "";
+      if (courses.length === 0) {
+        container.innerHTML = <p class="empty-msg">No courses yet — add one.</p>;
+        return;
+      }
+      courses.forEach(c => {
+        const div = document.createElement('div');
+        div.className = "course-card";
+        div.innerHTML = `
+          <h3>${c.title}</h3>
+          <p><strong>Instructor:</strong> ${c.instructor}</p>
+          <p>${c.description}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
